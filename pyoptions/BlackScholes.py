@@ -5,15 +5,15 @@ from scipy import stats, optimize
 class BlackScholes():
 
     @staticmethod
-    def _d1(Price, Strike, Volatility, Time, RiskFreeRate):
+    def _d1(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02):
         return (np.log(Price / Strike) + (RiskFreeRate + Volatility ** 2 / 2) * Time / 365) / (Volatility * np.sqrt(Time / 365))
 
     @staticmethod
-    def _d2(Price, Strike, Volatility, Time, RiskFreeRate):
+    def _d2(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02):
         return BlackScholes._d1(Price, Strike, Volatility, Time, RiskFreeRate) - Volatility * np.sqrt(Time / 365)
 
     @staticmethod
-    def CallOptionPrice(Price: float, Strike: float, Volatility: float, Time: int, RiskFreeRate: float) -> float:
+    def CallOptionPrice(Price: float, Strike: float, Volatility: float, Time: int, RiskFreeRate: float = 0.02) -> float:
         """
         Calculate the price of a american call option
 
@@ -25,9 +25,9 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`int` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         Return
         -------
@@ -38,7 +38,7 @@ class BlackScholes():
         return Price * stats.norm.cdf(d1) - Strike * np.exp(-RiskFreeRate * Time) * stats.norm.cdf(d2)
 
     @staticmethod
-    def PutOptionPrice(Price: float, Strike: float, Volatility: float, Time: int, RiskFreeRate: float) -> float:
+    def PutOptionPrice(Price: float, Strike: float, Volatility: float, Time: int, RiskFreeRate: float = 0.02) -> float:
         """
         Calculate the price of a american put option
 
@@ -50,9 +50,9 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         Return
         -------
@@ -66,7 +66,7 @@ class BlackScholes():
         return Strike * np.exp(-RiskFreeRate * Time) * stats.norm.cdf(-d2) - Price * stats.norm.cdf(-d1)
 
     @staticmethod
-    def ImpliedVolatility(Price, Strike, Time, RiskFreeRate, Premium, OptionType):
+    def ImpliedVolatility(Price, Strike, Time, Premium, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the implied volatility of a american option
 
@@ -76,14 +76,14 @@ class BlackScholes():
 
         Strike : :py:class:`float` Option strike price.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        Premium : :py:class:`float` Premium of the option. 
 
-        Premium : :py:class:`float` Premium of the option.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -99,7 +99,7 @@ class BlackScholes():
         return optimize.newton(lambda x: func(Price, Strike, x, Time, RiskFreeRate) - Premium, 0.1)
 
     @staticmethod
-    def Delta(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    def Delta(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Delta Greek of an American option. Measures the rate of change of the theoretical option value with respect to changes in the underlying asset's price.
 
@@ -113,12 +113,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -138,7 +138,8 @@ class BlackScholes():
         else:
             raise ValueError('OptionType must be "call" or "put"')
 
-    def Gamma(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    @staticmethod
+    def Gamma(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Gamma Greek of an American option. Measures the rate of change of the theoretical option value with respect to changes in the underlying asset's volatility.
 
@@ -152,12 +153,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -177,7 +178,8 @@ class BlackScholes():
         else:
             raise ValueError('OptionType must be "call" or "put"')
 
-    def Theta(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    @staticmethod
+    def Theta(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Theta Greek of an American option. Measures the rate of change of the theoretical option value with respect to time.
 
@@ -191,12 +193,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -220,7 +222,8 @@ class BlackScholes():
         else:
             raise ValueError('OptionType must be "call" or "put"')
 
-    def Vega(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    @staticmethod
+    def Vega(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Vega Greek of an American option. Measurement of the sensitivity of the value of the option to changes in the volatility of the underlying asset.
 
@@ -234,12 +237,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -259,7 +262,8 @@ class BlackScholes():
         else:
             raise ValueError('OptionType must be "call" or "put"')
 
-    def Rho(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    @staticmethod
+    def Rho(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Rhoe Greek of an American option. Measures the rate of change of the option value with respect to changes in the risk-free rate.
 
@@ -273,12 +277,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -298,7 +302,8 @@ class BlackScholes():
         else:
             raise ValueError('OptionType must be "call" or "put"')
 
-    def Lambda(Price, Strike, Volatility, Time, RiskFreeRate, OptionType):
+    @staticmethod
+    def Lambda(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call') -> float:
         """
         Calculate the Lambda Greek (Elasticity) of an American option. Measures the rate of change of the option value with respect to changes in the premium.
 
@@ -312,12 +317,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -325,18 +330,24 @@ class BlackScholes():
         Lambda : :py:class:`float`
         """
         if OptionType.lower() == 'call':
-            value = BlackScholes.CallOptionPrice()
+            value = BlackScholes.CallOptionPrice(
+                Price, Strike, Volatility, Time, RiskFreeRate)
             delta = BlackScholes.Delta(
                 Price, Strike, Volatility, Time, RiskFreeRate, OptionType)
             return delta * Price / value
 
         elif OptionType.lower() == 'put':
-            value = BlackScholes.PutOptionPrice()
+            value = BlackScholes.PutOptionPrice(
+                Price, Strike, Volatility, Time, RiskFreeRate)
             delta = BlackScholes.Delta(
                 Price, Strike, Volatility, Time, RiskFreeRate, OptionType)
             return delta * Price / value
 
-    def Vanna(Price, Strike, Volatility, Time, RiskFreeRate, OptionType: str = 'call'):
+        else:
+            raise ValueError('OptionType must be "call" or "put"')
+
+    @staticmethod
+    def Vanna(Price, Strike, Volatility, Time, RiskFreeRate: float = 0.02, OptionType: str = 'call'):
         """
         Calculate the Vanna Greek of an American option. Measures the sensitivity of the premium to changes in the volatility of the underlying asset.
 
@@ -350,12 +361,12 @@ class BlackScholes():
 
         Volatility : :py:class:`float` Annualized volatility of the asset.
 
-        Time : :py:class:`float` Time to maturity of the option.
+        Time : :py:class:`int` Days till option expiration.
 
-        RiskFreeRate : :py:class:`float` Annualized risk-free rate.
+        RiskFreeRate : :py:class:`float` Annualized risk-free rate. (default: 0.02)
 
         OptionType : :py:class:`str` Type of the option.
-            - 'call' for call options
+            - 'call' for call options (default)
             - 'put' for put options
 
         Return
@@ -378,5 +389,3 @@ class BlackScholes():
 
         else:
             raise ValueError('OptionType must be "call" or "put"')
-
-        # def
